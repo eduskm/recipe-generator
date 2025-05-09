@@ -4,7 +4,7 @@ import RecipeFinder from './RecipeFinder';
 function App() {
   return (
     <div>
-      <RecipeFinder/>
+      <RecipeFInder/>
     </div>
   );
 }
