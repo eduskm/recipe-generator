@@ -1,10 +1,10 @@
 import React from 'react';
+import RecipeFinder from './RecipeFinder';
 
 function App() {
   return (
     <div>
-      <h1>Recipe Generator</h1>
-      {/* Aici poți adăuga componentele tale */}
+      <RecipeFinder/>
     </div>
   );
 }
