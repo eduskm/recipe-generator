@@ -9,6 +9,8 @@ import RemoveButton from './RemoveButton';
 
 function RecipeFinder() {
     const [selectedIngredients, setSelectedIngredients] = useState([]);
+    const [query, setQuery] = useState("");
+    const [showSuggestions, setShowSuggestions] = useState(false);
     const [recipes, setRecipes] = useState([]);
     const [showPopup, setShowPopup] = useState(false);
     const [lastSelectedIngredient, setLastSelectedIngredient] = useState(null);
@@ -104,6 +106,8 @@ function RecipeFinder() {
     const clearAllIngredients = () => {
         setSelectedIngredients([]);
         popupDelay();
+        setQuery("");
+        setShowSuggestions(false);
     };
 
     const handleIngredientChange = (ingredient) => {
@@ -165,7 +169,13 @@ function RecipeFinder() {
                         <div className="relative z-20 h-full flex flex-col overflow-y-auto p-3 space-y-4 pr-6 -mr-3">
                             {/*search bar with remove all button */}
                             <div className="flex items-center space-y-2">
-                                <SearchBar onSelect={handleIngredientChange} selectedIngredients={selectedIngredients} />
+                                <SearchBar query={query}
+                                 setQuery={setQuery} 
+                                 showSuggestions={showSuggestions} 
+                                 setShowSuggestions={setShowSuggestions} 
+                                 onSelect={handleIngredientChange} 
+                                 selectedIngredients={selectedIngredients} 
+                                />
                                 <RemoveButton onClick={clearAllIngredients}/>
                             </div>
                             {Object.entries(ingredientsByCategory).map(([category, ingredients]) => (

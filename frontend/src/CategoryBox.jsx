@@ -10,7 +10,17 @@ export default function CategoryBox({
   const maxToShow = 8;
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const visibleItems = isExpanded ? ingredients : ingredients.slice(0, maxToShow);
+  // Reorder ingredients: Selected items come first
+  const visibleItems = isExpanded
+    ? ingredients.sort((a, b) => 
+        selectedIngredients.includes(b) - selectedIngredients.includes(a)
+      )
+    : ingredients
+        .slice(0, maxToShow)
+        .sort((a, b) =>
+          selectedIngredients.includes(b) - selectedIngredients.includes(a)
+        );
+
   const remainingCount = ingredients.length - maxToShow;
 
   const handleClick = (ingredient) => {
@@ -26,7 +36,9 @@ export default function CategoryBox({
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-semibold text-black">{title}</h2>
         <span className="text-gray-500 text-sm">
-          {visibleItems.length}/{ingredients.length}
+          {selectedIngredients.filter((item) => ingredients.includes(item))
+            .length}
+          /{ingredients.length}
         </span>
       </div>
 
@@ -36,26 +48,26 @@ export default function CategoryBox({
         transition={{ layout: { duration: 0.5, ease: "easeInOut" } }}
       >
         <AnimatePresence>
-        {visibleItems.map((item, index) => {
-          const isSelected = selectedIngredients.includes(item);
-          return (
-            <motion.span
-              key={index}
-              onClick={() => handleClick(item)}
-              className={`cursor-pointer px-3 py-1 text-sm rounded ${
-                isSelected
-                  ? "bg-green-200 text-green-800 font-semibold"
-                  : "bg-gray-100 text-gray-800"
-              }`}
-              initial={{scale: 1}}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              layout
-            >
-              {item.toLowerCase()}
-            </motion.span>
-          );
-        })}
+          {visibleItems.map((item, index) => {
+            const isSelected = selectedIngredients.includes(item);
+            return (
+              <motion.span
+                key={index}
+                onClick={() => handleClick(item)}
+                className={`cursor-pointer px-3 py-1 text-sm rounded ${
+                  isSelected
+                    ? "bg-green-200 text-green-800 font-semibold"
+                    : "bg-gray-100 text-gray-800"
+                }`}
+                initial={{ scale: 1 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                layout
+              >
+                {item.toLowerCase()}
+              </motion.span>
+            );
+          })}
         </AnimatePresence>
 
         <AnimatePresence>
