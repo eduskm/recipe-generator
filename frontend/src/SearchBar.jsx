@@ -9,7 +9,7 @@ export default function SearchBar({ onSelect, selectedIngredients}) {
     const [showSuggestions, setShowSuggestions] = useState(false);
   
     const filteredSuggestions = suggestionsList.filter((item) =>
-      item.toLowerCase().includes(query.toLowerCase())
+      item.toLowerCase().startsWith(query.toLowerCase())
     );
   
     const handleChange = (e) => {
@@ -52,7 +52,7 @@ export default function SearchBar({ onSelect, selectedIngredients}) {
                   className="p-3 hover:bg-white-500 cursor-pointer text-xs "
                 >
                   {item}
-                  {selectedIngredients.includes(item) 
+                  {selectedIngredients.includes(item)   
                   ? <span className="text-red-600 font-bold text-sm ml-2">-</span> 
                   : <span className="text-green-600 font-bold text-sm ml-2">+</span>}
                 </li>

@@ -35,6 +35,7 @@ export default function CategoryBox({
         className="flex flex-wrap gap-2 overflow-hidden"
         transition={{ layout: { duration: 0.5, ease: "easeInOut" } }}
       >
+        <AnimatePresence>
         {visibleItems.map((item, index) => {
           const isSelected = selectedIngredients.includes(item);
           return (
@@ -46,6 +47,7 @@ export default function CategoryBox({
                   ? "bg-green-200 text-green-800 font-semibold"
                   : "bg-gray-100 text-gray-800"
               }`}
+              initial={{scale: 1}}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               layout
@@ -54,6 +56,7 @@ export default function CategoryBox({
             </motion.span>
           );
         })}
+        </AnimatePresence>
 
         <AnimatePresence>
           {!isExpanded && remainingCount > 0 && (
