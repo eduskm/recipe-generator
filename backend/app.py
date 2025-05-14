@@ -1,13 +1,33 @@
 import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import requests
+from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
+from flask_migrate import Migrate
+
+from auth import auth_bp  # Blueprintul de autentificare
+from models import db     # Obiectul SQLAlchemy
 
 load_dotenv()
 
 app = Flask(__name__)
+app.secret_key = os.urandom(24)
 CORS(app)
+
+# Configurare SQLAlchemy
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
+
+# Inițializare Flask-Migrate
+migrate = Migrate(app, db)
+
+# Înregistrare blueprint-uri
+app.register_blueprint(auth_bp)
+
+# === Rutele tale existente ===
+import requests
+
 API_KEY = os.getenv("SPOONACULAR_API_KEY")
 
 @app.route("/generate-recipes", methods=["POST"])
@@ -32,19 +52,14 @@ def generate_recipes():
         return jsonify({"error": "Failed to fetch recipes"}), 500
 
     recipes = response.json()
-    ids = ""
-    for recipe in recipes:
-        ids += str(recipe["id"]) + ","
-    
-    if ids.endswith(","):
-        ids = ids[:-1]
+    ids = ",".join(str(recipe["id"]) for recipe in recipes)
 
     return jsonify({"recipe-ids": ids})
+
 @app.route("/get-recipe-links", methods=["POST"])
 def get_recipe_link():
     data = request.json
     ids = data.get("recipe-ids", "")
-    print(ids)
     if not ids:
         return jsonify({"error": "No ids provided"}), 400
 
@@ -55,15 +70,15 @@ def get_recipe_link():
     }
 
     response = requests.get(url, params=params)
-
     if response.status_code != 200:
         return jsonify({"error": "Failed to fetch links of recipes"}), 500
-    
-    response = response.json()
-    
-    
-    return jsonify(response)
 
+    return jsonify(response.json())
 
+# === Crearea bazei de date dacă nu există ===
+with app.app_context():
+    db.create_all()
+
+# === Pornirea aplicației ===
 if __name__ == "__main__":
     app.run(debug=True)
