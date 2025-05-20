@@ -12,7 +12,8 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
-CORS(app)
+CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
+
 
 # Configurare SQLAlchemy
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'

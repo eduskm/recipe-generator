@@ -7,6 +7,7 @@ const Login = () => {
     // Trimite token-ul la backend pentru a-l verifica
     fetch('http://localhost:5000/auth', {
       method: 'POST',
+      mode: 'cors',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -15,7 +16,10 @@ const Login = () => {
       .then((res) => res.json())
       .then((data) => {
         console.log('Logged in successfully:', data);
-        // Redirecționează utilizatorul către dashboard sau o altă pagină
+         if (data.user) {
+          localStorage.setItem('user', JSON.stringify(data.user));
+          window.location.reload(); // 👈 actualizează aplicația
+        }
       })
       .catch((error) => console.log('Error logging in:', error));
   };
