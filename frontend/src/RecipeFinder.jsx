@@ -1,11 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import veggiesImage from '/veggies.jpg';
 import SearchBar from './SearchBar';
 import CategoryBox from './CategoryBox';
+import { motion, AnimatePresence } from "framer-motion";
+import Popup from './Popup';
+import { FaRegTrashCan } from "react-icons/fa6";
+import RemoveButton from './RemoveButton';
 
 function RecipeFinder() {
     const [selectedIngredients, setSelectedIngredients] = useState([]);
+    const [query, setQuery] = useState("");
+    const [showSuggestions, setShowSuggestions] = useState(false);
     const [recipes, setRecipes] = useState([]);
+    const [showPopup, setShowPopup] = useState(false);
+    const [lastSelectedIngredient, setLastSelectedIngredient] = useState(null);
+    const popupTimeoutRef = useRef(null);
+
     const ingredientsByCategory = {
         Vegetables: [
             "Carrot", "Onion", "Garlic", "Bell Pepper", "Broccoli", "Spinach", "Kale", "Zucchini", "Potato", "Sweet Potato",
@@ -82,12 +92,40 @@ function RecipeFinder() {
             "Coconut Flour", "Brownie Mix", "Sprinkles", "Breadcrumbs", "Buttermilk", "Cornmeal", "Pecans", "Walnut Flour", "Graham Cracker"
         ]
     }
+    const popupDelay = () => {
+        setShowPopup(true);
+        if (popupTimeoutRef.current) {
+            clearTimeout(popupTimeoutRef.current); // Clear any previous timeout
+        }
+        
+        popupTimeoutRef.current = setTimeout(() => {
+            setShowPopup(false);
+        }, 1000);
+    }
+
+    const clearAllIngredients = () => {
+        setSelectedIngredients([]);
+        popupDelay();
+        setQuery("");
+        setShowSuggestions(false);
+    };
+
     const handleIngredientChange = (ingredient) => {
-        setSelectedIngredients((prevState) =>
-            prevState.includes(ingredient)
+        setSelectedIngredients((prevState) => {
+            const isRemoving = prevState.includes(ingredient);
+            const updatedIngredients = isRemoving
                 ? prevState.filter(item => item !== ingredient)
-                : [...prevState, ingredient]
-        );
+                : [...prevState, ingredient];
+    
+            setLastSelectedIngredient({
+                ingredientName: ingredient,
+                action: isRemoving ? 'removed' : 'added'
+            });
+
+            popupDelay();
+    
+            return updatedIngredients;
+        });
     };
 
     const fetchRecipes = async () => {
@@ -117,7 +155,7 @@ function RecipeFinder() {
     return (
         <div className="flex justify-center items-center min-h-screen bg-[#EADBDD] font-sans">
             <div className="w-full max-w-6xl bg-white p-8 rounded-3xl shadow-xl">
-                <div className="flex">
+                <div className="flex relative">
                     {/* Left Menu (Scrollable) */}
                     <div
                         className="w-64 h-[32rem] relative bg-cover bg-center rounded-lg mr-8"
@@ -129,7 +167,17 @@ function RecipeFinder() {
 
                         {/* Scrollable content */}
                         <div className="relative z-20 h-full flex flex-col overflow-y-auto p-3 space-y-4 pr-6 -mr-3">
-                            <SearchBar onSelect={handleIngredientChange} selectedIngredients={selectedIngredients}/>
+                            {/*search bar with remove all button */}
+                            <div className="flex items-center space-y-2">
+                                <SearchBar query={query}
+                                 setQuery={setQuery} 
+                                 showSuggestions={showSuggestions} 
+                                 setShowSuggestions={setShowSuggestions} 
+                                 onSelect={handleIngredientChange} 
+                                 selectedIngredients={selectedIngredients} 
+                                />
+                                <RemoveButton onClick={clearAllIngredients}/>
+                            </div>
                             {Object.entries(ingredientsByCategory).map(([category, ingredients]) => (
                                 <CategoryBox
                                     key={category}
@@ -152,7 +200,7 @@ function RecipeFinder() {
                     </div>
 
                     {/* Main Area (Recipes) */}
-                    <div className="flex-1">
+                    <div className="flex-1 relative">
                         <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Recipes</h2>
                         <div id="recipe-list" className="space-y-6">
                             {recipes.length === 0 ? (
@@ -164,7 +212,7 @@ function RecipeFinder() {
                                         className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300"
                                     >
                                         <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                                            {recipe.sourceName}
+                                            {recipe.title}
                                         </h3>
                                         <p className="text-gray-600">
                                             <strong>Ingredients:</strong> {recipe.readyInMinutes}
@@ -173,6 +221,9 @@ function RecipeFinder() {
                                 ))
                             )}
                         </div>
+                        <Popup show={showPopup}
+                               message={selectedIngredients.length === 0 ? "trash" : lastSelectedIngredient}
+                        />
                     </div>
                 </div>
             </div>
