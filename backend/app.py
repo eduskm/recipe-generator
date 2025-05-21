@@ -4,7 +4,7 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 from flask_migrate import Migrate
-
+import requests
 from auth import auth_bp  # Blueprintul de autentificare
 from models import db     # Obiectul SQLAlchemy
 
@@ -15,19 +15,13 @@ app.secret_key = os.urandom(24)
 CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
 
 
-# Configurare SQLAlchemy
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
-# Inițializare Flask-Migrate
 migrate = Migrate(app, db)
-
-# Înregistrare blueprint-uri
 app.register_blueprint(auth_bp)
-
-# === Rutele tale existente ===
-import requests
 
 API_KEY = os.getenv("SPOONACULAR_API_KEY")
 
@@ -76,10 +70,8 @@ def get_recipe_link():
 
     return jsonify(response.json())
 
-# === Crearea bazei de date dacă nu există ===
 with app.app_context():
     db.create_all()
 
-# === Pornirea aplicației ===
 if __name__ == "__main__":
     app.run(debug=True)

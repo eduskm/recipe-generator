@@ -5,8 +5,7 @@ from google.auth.transport.requests import Request
 from google.oauth2 import id_token
 from dotenv import load_dotenv
 
-from models import db, User  # 👈 importă modelul User și obiectul db
-
+from models import db, User 
 load_dotenv()
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 
@@ -21,18 +20,15 @@ def authenticate():
         if not token:
             return jsonify({"error": "Missing token"}), 400
 
-        # Verifică token-ul cu Google
         try:
             idinfo = id_token.verify_oauth2_token(token, Request(), GOOGLE_CLIENT_ID)
             print(f"Token valid: {idinfo}")
 
-            # Extrage informații despre utilizator
             google_id = idinfo["sub"]
             email = idinfo["email"]
             name = idinfo.get("name")
             picture = idinfo.get("picture", "")
 
-            # Verifică dacă utilizatorul există în baza de date
             user = User.query.filter_by(google_id=google_id).first()
             if not user:
                 user = User(
