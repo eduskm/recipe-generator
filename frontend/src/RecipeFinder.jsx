@@ -1,20 +1,27 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import veggiesImage from '/veggies.jpg';
 import SearchBar from './SearchBar';
 import CategoryBox from './CategoryBox';
 import { motion, AnimatePresence } from "framer-motion";
 import Popup from './Popup';
-import { FaRegTrashCan } from "react-icons/fa6";
 import RemoveButton from './RemoveButton';
+import UserButton from './UserButton';
 
 function RecipeFinder() {
-    const [selectedIngredients, setSelectedIngredients] = useState([]);
+    const [selectedIngredients, setSelectedIngredients] = useState(() => {
+        const saved = localStorage.getItem('selectedIngredients');
+        return saved ? JSON.parse(saved) : [];
+    });
     const [query, setQuery] = useState("");
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [recipes, setRecipes] = useState([]);
     const [showPopup, setShowPopup] = useState(false);
     const [lastSelectedIngredient, setLastSelectedIngredient] = useState(null);
     const popupTimeoutRef = useRef(null);
+
+    useEffect(() => {
+        localStorage.setItem('selectedIngredients', JSON.stringify(selectedIngredients));
+    }, [selectedIngredients]);
 
     const ingredientsByCategory = {
         Vegetables: [
@@ -43,7 +50,7 @@ function RecipeFinder() {
             "Venison", "Brisket", "Prosciutto", "Salami", "Duck Breast", "Goat", "Tri-Tip", "Pastrami", "Chorizo", "Ground Lamb",
             "Filet Mignon", "New York Strip", "Rib-eye", "Chuck Roast", "Top Sirloin", "T-bone", "Pork Tenderloin", "Spareribs",
             "Pork Belly", "Pork Chop", "Kielbasa", "Turkey Breast", "Cornish Hen", "Roast Duck", "Capicola", "Bresaola", "Pâté",
-            "Lamb Shank", "Duck Leg", "Bison", "Rabbit", "Wild Boar", "Goose"
+            "Lamb Shank", "Duck Leg", "Bison", "Rabbit", "Wild Boar", "Goose", "Chicken Breast", "Chicken Wings", "Chicken Thighs"
         ],
         Seafood: [
             "Salmon", "Shrimp", "Tuna", "Crab", "Cod", "Tilapia", "Mussels", "Clams", "Lobster", "Scallops", "Anchovies", "Oysters",
@@ -97,7 +104,7 @@ function RecipeFinder() {
         if (popupTimeoutRef.current) {
             clearTimeout(popupTimeoutRef.current); // Clear any previous timeout
         }
-        
+
         popupTimeoutRef.current = setTimeout(() => {
             setShowPopup(false);
         }, 1000);
@@ -116,14 +123,14 @@ function RecipeFinder() {
             const updatedIngredients = isRemoving
                 ? prevState.filter(item => item !== ingredient)
                 : [...prevState, ingredient];
-    
+
             setLastSelectedIngredient({
                 ingredientName: ingredient,
                 action: isRemoving ? 'removed' : 'added'
             });
 
             popupDelay();
-    
+
             return updatedIngredients;
         });
     };
@@ -154,29 +161,38 @@ function RecipeFinder() {
     console.log(selectedIngredients);
     return (
         <div className="flex justify-center items-center min-h-screen bg-[#EADBDD] font-sans">
-            <div className="w-full max-w-6xl bg-white p-8 rounded-3xl shadow-xl">
-                <div className="flex relative">
+            <div className="w-full max-w-none bg-white rounded-3xl shadow-xl" style={{
+                width: '95vw',
+                height: '95vh',
+                minWidth: '320px',
+                minHeight: '500px'
+            }}>
+                <div className="flex relative h-full p-4 md:p-6 lg:p-8">
                     {/* Left Menu (Scrollable) */}
                     <div
-                        className="w-64 h-[32rem] relative bg-cover bg-center rounded-lg mr-8"
-                        style={{ backgroundImage: `url(${veggiesImage})` }}
+                        className="flex-shrink-0 relative bg-cover bg-center rounded-lg"
+                        style={{
+                            backgroundImage: `url(${veggiesImage})`,
+                            width: 'clamp(200px, 25vw, 320px)',
+                            height: '100%'
+                        }}
                     >
                         {/* Overlay and Blur */}
-                        <div className="absolute inset-0 bg-black opacity-10 rounded-lg"></div>
+                        <div className="absolute inset-0 bg-black opacity-10 rounded-xl"></div>
                         <div className="absolute inset-0 bg-opacity-20 backdrop-blur-sm rounded-lg"></div>
 
                         {/* Scrollable content */}
-                        <div className="relative z-20 h-full flex flex-col overflow-y-auto p-3 space-y-4 pr-6 -mr-3">
+                        <div className="relative z-20 h-full flex flex-col overflow-y-auto p-2 md:p-3 space-y-2 md:space-y-4 pr-4 md:pr-6 -mr-2 md:-mr-3">
                             {/*search bar with remove all button */}
                             <div className="flex items-center space-y-2">
                                 <SearchBar query={query}
-                                 setQuery={setQuery} 
-                                 showSuggestions={showSuggestions} 
-                                 setShowSuggestions={setShowSuggestions} 
-                                 onSelect={handleIngredientChange} 
-                                 selectedIngredients={selectedIngredients} 
+                                    setQuery={setQuery}
+                                    showSuggestions={showSuggestions}
+                                    setShowSuggestions={setShowSuggestions}
+                                    onSelect={handleIngredientChange}
+                                    selectedIngredients={selectedIngredients}
                                 />
-                                <RemoveButton onClick={clearAllIngredients}/>
+                                <RemoveButton onClick={clearAllIngredients} />
                             </div>
                             {Object.entries(ingredientsByCategory).map(([category, ingredients]) => (
                                 <CategoryBox
@@ -192,7 +208,7 @@ function RecipeFinder() {
 
                             <button
                                 onClick={recipeLinks}
-                                className="w-full bg-green-600 text-white py-1 px-4 rounded hover:bg-green-700 transition duration-300"
+                                className="w-full bg-green-600 text-white py-1 px-2 md:px-4 rounded hover:bg-green-700 transition duration-300 text-sm md:text-base"
                             >
                                 Generează Rețete
                             </button>
@@ -200,29 +216,55 @@ function RecipeFinder() {
                     </div>
 
                     {/* Main Area (Recipes) */}
-                    <div className="flex-1 relative">
-                        <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Recipes</h2>
-                        <div id="recipe-list" className="space-y-6">
+                    <div className="flex-1 relative ml-4 md:ml-6 lg:ml-8">
+                        <div className="">
+                            <div className='flex justify-between gap-4'>
+                                <div className='flex gap-2'>
+                                    what's in my fridge?
+                                    <div className="bg-gray-300 h-3px w-px"></div>
+                                    <UserButton className="ml-9" />
+                                </div>
+                                <button>
+                                    favorite
+                                </button>
+                            </div>
+                            <div className="bg-gray-300 h-px w-full my-4"></div>
+                        </div>
+                        <div
+                            id="recipe-list"
+                            className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 overflow-auto"
+                        >
                             {recipes.length === 0 ? (
-                                <p className="text-center text-gray-500">No recipes match the selected ingredients.</p>
+                                <p className="col-span-full text-center text-gray-500 text-sm md:text-base">
+                                    No recipes match the selected ingredients.
+                                </p>
                             ) : (
                                 recipes.map((recipe, index) => (
                                     <div
                                         key={index}
-                                        className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300"
+                                        className="bg-white p-4 md:p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 flex gap-6"
                                     >
-                                        <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                                            {recipe.title}
-                                        </h3>
-                                        <p className="text-gray-600">
-                                            <strong>Ingredients:</strong> {recipe.readyInMinutes}
-                                        </p>
+                                        <div
+                                            className="h-32 w-32 rounded-lg bg-center bg-cover flex-shrink-0"
+                                            style={{ backgroundImage: `url(${recipe.image})` }}
+                                        ></div>
+
+                                        <div className="flex flex-col justify-center">
+                                            <h3 className="text-lg md:text-ml text-gray-800 mb-2">
+                                                {recipe.title}
+                                            </h3>
+                                            <p className="text-gray-600 text-sm md:text-base">
+                                                <a href={recipe.sourceUrl}>view recipe</a>
+                                            </p>
+                                        </div>
                                     </div>
                                 ))
+
                             )}
                         </div>
+
                         <Popup show={showPopup}
-                               message={selectedIngredients.length === 0 ? "trash" : lastSelectedIngredient}
+                            message={selectedIngredients.length === 0 ? "trash" : lastSelectedIngredient}
                         />
                     </div>
                 </div>

@@ -19,7 +19,6 @@ function App() {
   if (user) {
     return (
       <>
-        <UserDashboard user={user} onLogout={() => setUser(null)} />
         <RecipeFinder />
       </>
     );
