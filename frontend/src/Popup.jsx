@@ -13,7 +13,7 @@ const Popup = ({ show, message, removedIngredients }) => {
                     exit={{ y: 50, opacity: 0 }}
                     transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 >
-                    <div className="bg-white border shadow-lg rounded-xl px-6 py-4 w-full max-w-md text-center">
+                    <div className="bg-white border shadow-lg rounded-xl px-6 py-4 w-full max-w-md whitespace-nowrap text-center">
                         <p className="text-gray-800">
                           {message === "trash" ? "removed all ingredients" : (
                             <>

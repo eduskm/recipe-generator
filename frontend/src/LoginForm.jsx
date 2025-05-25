@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+
 const LoginForm = ({ onLogin }) => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
@@ -22,21 +23,52 @@ const LoginForm = ({ onLogin }) => {
         localStorage.setItem('user', JSON.stringify(data.user));
         onLogin(data.user);
       } else {
-        setError(data.error || 'Login failed');
+        setError(data.error || 'Login failed')
       }
     } catch (err) {
       setError('Server error');
     }
   };
 
+
+
   return (
-    <form onSubmit={handleSubmit} className="p-4 bg-white rounded shadow w-80 mx-auto mt-10">
-      <h2 className="text-xl font-bold mb-4">Login</h2>
-      {error && <p className="text-red-600">{error}</p>}
-      <input name="email" placeholder="Email" onChange={handleChange} className="block mb-2 w-full p-2 border rounded" />
-      <input type="password" name="password" placeholder="Password" onChange={handleChange} className="block mb-4 w-full p-2 border rounded" />
-      <button className="bg-blue-500 text-white py-1 px-4 rounded hover:bg-blue-600">Login</button>
-    </form>
+    <div className="w-90 mx-auto mt-20">
+      <div className="space-y-6">
+        
+        {error && (
+          <p className="text-red-500 text-sm text-center">{error}</p>
+        )}
+        
+        <div className="shadow-lg">
+          <input 
+            name="email" 
+            type="email"
+            placeholder="Email" 
+            value={form.email}
+            onChange={handleChange} 
+            className="w-full p-5 text-gray-700 border-b border-gray-300 rounded-t-sm bg-transparent focus:outline-none focus:border-gray-600 transition-colors text-center"
+          />
+          
+          <input 
+            type="password" 
+            name="password" 
+            placeholder="Password" 
+            value={form.password}
+            onChange={handleChange} 
+            className="w-full p-5 text-gray-700 border-b border-gray-300 rounded-b-sm bg-transparent focus:outline-none focus:border-gray-600 transition-colors text-center"
+          />
+        </div>
+        
+        <button 
+          type="button"
+          onClick={handleSubmit}
+          className="w-full p-3 mt-2 bg-green-200 text-green-800 font-semibold hover:bg-gray-50 transition-colors tracking-wide"
+        >
+          Login
+        </button>
+      </div>
+    </div>
   );
 };
 

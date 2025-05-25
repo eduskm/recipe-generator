@@ -91,3 +91,27 @@ def login():
             }
         })
     return jsonify({"error": "Invalid credentials"}), 401
+
+@auth_bp.route('/change-password', methods=['POST'])
+def change_password():
+    data = request.get_json()
+    email = data.get('email') 
+    current_password = data.get('current_password')
+    new_password = data.get('new_password')
+
+    if current_password == new_password:
+        return jsonify({"error": "password is the same"}), 400
+
+    if not email or not current_password or not new_password:
+        return jsonify({"error": "Missing required fields"}), 400
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    if not user.check_password(current_password):
+        return jsonify({"error": "Current password is incorrect"}), 401
+
+    user.set_password(new_password)
+    db.session.commit()
+    return jsonify({"message": "Password changed successfully"}), 200

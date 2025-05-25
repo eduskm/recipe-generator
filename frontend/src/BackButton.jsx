@@ -1,11 +1,11 @@
-import { CiUser } from "react-icons/ci";
+import { IoArrowBackSharp } from "react-icons/io5";
 import { motion } from 'framer-motion';
 
-export default function UserButton({onClick}) {
+export default function BackButton({onClick}) {
     return(
         <motion.button
         onClick={onClick}
-        className="transition duration-300 transform flex items-center text-sm font-medium rounded-lg hover:bg-gray-100 text-gray-600"
+        className="p-2 bg-gray-400 text-white rounded-full hover:bg-gray-700 transition duration-300 transform focus:outline-none"
         aria-label="Clear all ingredients"
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 0.9 }}
@@ -14,7 +14,7 @@ export default function UserButton({onClick}) {
         whileHover={{scale: 1}}
         whileTap={{scale: 0.9}}
       >
-        my account
+        <IoArrowBackSharp/>
       </motion.button>
     );
-} 
+}
