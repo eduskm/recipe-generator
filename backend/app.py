@@ -1,4 +1,5 @@
 import os
+import sys
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -14,8 +15,6 @@ app = Flask(__name__)
 app.secret_key = os.urandom(24)
 CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
 
-
-
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
@@ -29,7 +28,9 @@ API_KEY = os.getenv("SPOONACULAR_API_KEY")
 def generate_recipes():
     data = request.json
     ingredients = data.get("ingredients", "")
-    num_of_recipes = data.get("num_of_recipes", 5)
+    num_of_recipes = data.get("num_of_recipes", 100)
+    page = data.get("page", 1)  # Default to page 1
+    per_page = data.get("per_page", 5)  # Default to 5 recipes per page
 
     if not ingredients:
         return jsonify({"error": "No ingredients provided"}), 400
@@ -47,9 +48,34 @@ def generate_recipes():
         return jsonify({"error": "Failed to fetch recipes"}), 500
 
     recipes = response.json()
-    ids = ",".join(str(recipe["id"]) for recipe in recipes)
+    
+    perfect_match_recipes = []
+    for recipe in recipes:
+        if recipe["missedIngredientCount"] < 3:
+            perfect_match_recipes.append(recipe)
+            print(recipe["missedIngredients"])
 
-    return jsonify({"recipe-ids": ids})
+    print("Total perfect match recipes: " + str(len(perfect_match_recipes)))
+    
+    # Calculate pagination
+    start_idx = (page - 1) * per_page
+    end_idx = start_idx + per_page
+    
+    # Get the recipes for this page
+    paginated_recipes = perfect_match_recipes[start_idx:end_idx]
+    
+    # Check if there are more recipes available
+    has_more = end_idx < len(perfect_match_recipes)
+    
+    ids = ','.join([str(recipe["id"]) for recipe in paginated_recipes])
+    
+    return jsonify({
+        "recipe-ids": ids,
+        "has_more": has_more,
+        "total": len(perfect_match_recipes),
+        "current_page": page,
+        "per_page": per_page
+    })
 
 @app.route("/get-recipe-links", methods=["POST"])
 def get_recipe_link():

@@ -89,12 +89,12 @@
               <motion.span
                 key="less-button"
                 onClick={toggleExpanded}
-                className="text-sm text-blue-600 cursor-pointer underline"
+                className="bg-red-200 text-gray-800 text-sm px-3 py-1 rounded cursor-pointer hover:bg-red-300"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
               >
-                Show Less
+                show less
               </motion.span>
             )}
           </AnimatePresence>
