@@ -16,6 +16,7 @@ def authenticate():
     try:
         data = request.get_json()
         token = data.get("token")
+        print("🔐 Token primit:", token)
 
         if not token:
             return jsonify({"error": "Missing token"}), 400
@@ -50,6 +51,7 @@ def authenticate():
             return jsonify({"message": "Token valid", "user": user_info})
 
         except ValueError as e:
+            print("❌ Eroare validare token:", str(e))
             return jsonify({"error": f"Invalid token: {str(e)}"}), 401
 
     except Exception as e:

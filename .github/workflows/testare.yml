@@ -1,0 +1,55 @@
+name: CI - Testare Frontend și Backend
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  testare-frontend:
+    name: Testare Frontend (React)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout codul
+        uses: actions/checkout@v3
+
+      - name: Instalare Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Instalare dependințe
+        run: npm install
+
+      - name: Rulare teste Jest
+        run: npm test
+
+  testare-backend:
+    name: Testare Backend (Flask + pytest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout codul
+        uses: actions/checkout@v3
+
+      - name: Instalare Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Instalare dependințe
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Rulare teste Pytest
+        run: pytest

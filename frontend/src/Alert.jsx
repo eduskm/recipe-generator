@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import React from 'react';
 
 // The confirmDelete function from the parent will be passed in.
 export default function Alert({ action, confirmDelete, cancelDelete }) {

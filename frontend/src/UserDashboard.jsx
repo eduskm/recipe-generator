@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Alert from './Alert';
 import ChangePasswordForm from './ChangePasswordForm';
+import React from 'react';
 
 const UserDashboard = ({ user, onLogout }) => {
   const [showConfirm, setShowConfirm] = useState(null);
