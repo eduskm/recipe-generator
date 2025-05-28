@@ -157,7 +157,8 @@ const useRecipes = () => {
 // Custom hook for favorites management
 const useFavorites = (userId, token) => {
     const [favorites, setFavorites] = useState([]);
-  
+    console.log(favorites)
+
     // Load favorites from backend on mount or when userId/token changes
     useEffect(() => {
       if (!userId || !token) {
@@ -286,9 +287,19 @@ function RecipeFinder() {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [lastSelectedIngredient, setLastSelectedIngredient] = useState(null);
     const [userTab, setUserTab] = useState(false);
-    const [user, setUser] = useState(null);
     const [showRegister, setShowRegister] = useState(false);
     const [currentView, setCurrentView] = useState('recipes'); // 'recipes' or 'favorites'
+    const [user, setUser] = useState(null);
+    console.log('user is' + user);
+    useEffect(() => {
+        const userName = localStorage.getItem("user");
+        if(userName) {
+            const userObject = JSON.parse(userName);
+
+            setUser(userObject);
+        }
+
+    }, []);
 
     // Custom hooks
     const { showPopup, triggerPopup } = usePopup();
@@ -530,7 +541,6 @@ function RecipeFinder() {
                 </p>
             );
         }
-
         return (
             <>
                 {recipes.map((recipe, index) => renderRecipeCard(recipe, index))}

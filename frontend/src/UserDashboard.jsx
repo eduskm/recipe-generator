@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import Alert from './Alert';
-import ChangePasswordForm from './ChangePasswordForm'; // 👈 Import the form
+import ChangePasswordForm from './ChangePasswordForm';
 
 const UserDashboard = ({ user, onLogout }) => {
   const [showConfirm, setShowConfirm] = useState(null);
-  const [showChangePassword, setShowChangePassword] = useState(false); // 👈 New state
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -12,13 +12,38 @@ const UserDashboard = ({ user, onLogout }) => {
   };
 
   const handleDeleteAccount = () => {
-    setShowConfirm('delete');
+    setShowConfirm('delete'); // This will trigger the Alert modal
   };
 
-  const confirmDelete = () => {
-    localStorage.removeItem('user');
-    onLogout();
-    setShowConfirm(null);
+  // This function is now async and accepts the password from the Alert component
+  const confirmDelete = async (password) => {
+    try {
+      const response = await fetch('http://localhost:5000/delete_account', { // Make sure the proxy is set up in package.json or use the full URL
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: user.email,
+          password: password, // Send the email and password
+        }),
+      });
+
+      if (response.ok) {
+        // If deletion is successful on the backend...
+        localStorage.removeItem('user'); // ...log the user out on the frontend
+        onLogout();
+        setShowConfirm(null);
+        return true; // Indicate success
+      } else {
+        // If credentials fail or another error occurs
+        console.error('Failed to delete account');
+        return false; // Indicate failure
+      }
+    } catch (error) {
+      console.error('Error during account deletion:', error);
+      return false; // Indicate failure
+    }
   };
 
   const cancelDelete = () => {
@@ -26,11 +51,7 @@ const UserDashboard = ({ user, onLogout }) => {
   };
 
   const handleShowChangePassword = () => {
-    setShowChangePassword(true); // 
-  };
-
-  const handleBack = () => {
-    setShowChangePassword(false);
+    setShowChangePassword(true);
   };
 
   if (showChangePassword) {
@@ -66,7 +87,13 @@ const UserDashboard = ({ user, onLogout }) => {
         change password
       </button>
 
-      <Alert action={showConfirm} confirmDelete={confirmDelete} cancelDelete={cancelDelete} />
+      {/* Pass the correct props to the Alert component */}
+      <Alert
+        action={showConfirm}
+        confirmDelete={confirmDelete}
+        cancelDelete={cancelDelete}
+        email={user.email}
+      />
     </div>
   );
 };

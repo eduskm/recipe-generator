@@ -44,7 +44,7 @@ const LoginForm = ({ onLogin }) => {
           <input 
             name="email" 
             type="email"
-            placeholder="Email" 
+            placeholder="email" 
             value={form.email}
             onChange={handleChange} 
             className="w-full p-5 text-gray-700 border-b border-gray-300 rounded-t-sm bg-transparent focus:outline-none focus:border-gray-600 transition-colors text-center"
@@ -53,7 +53,7 @@ const LoginForm = ({ onLogin }) => {
           <input 
             type="password" 
             name="password" 
-            placeholder="Password" 
+            placeholder="password" 
             value={form.password}
             onChange={handleChange} 
             className="w-full p-5 text-gray-700 border-b border-gray-300 rounded-b-sm bg-transparent focus:outline-none focus:border-gray-600 transition-colors text-center"
