@@ -6,7 +6,8 @@ from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 from flask_migrate import Migrate
 import requests
-from auth import auth_bp 
+from auth import auth_bp
+from favorites import favorites_bp
 from models import db    
 
 load_dotenv()
@@ -21,6 +22,7 @@ db.init_app(app)
 
 migrate = Migrate(app, db)
 app.register_blueprint(auth_bp)
+app.register_blueprint(favorites_bp)
 
 API_KEY = os.getenv("SPOONACULAR_API_KEY")
 
