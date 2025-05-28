@@ -6,8 +6,9 @@ from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 from flask_migrate import Migrate
 import requests
-from auth import auth_bp  # Blueprintul de autentificare
-from models import db     # Obiectul SQLAlchemy
+from auth import auth_bp
+from favorites import favorites_bp
+from models import db    
 
 load_dotenv()
 
@@ -21,16 +22,21 @@ db.init_app(app)
 
 migrate = Migrate(app, db)
 app.register_blueprint(auth_bp)
+app.register_blueprint(favorites_bp)
 
 API_KEY = os.getenv("SPOONACULAR_API_KEY")
+
+@app.route("/", methods=["GET"])
+def hello():
+    print("hello world")
 
 @app.route("/generate-recipes", methods=["POST"])
 def generate_recipes():
     data = request.json
     ingredients = data.get("ingredients", "")
     num_of_recipes = data.get("num_of_recipes", 100)
-    page = data.get("page", 1)  # Default to page 1
-    per_page = data.get("per_page", 5)  # Default to 5 recipes per page
+    page = data.get("page", 1) 
+    per_page = data.get("per_page", 5) 
 
     if not ingredients:
         return jsonify({"error": "No ingredients provided"}), 400
@@ -57,14 +63,11 @@ def generate_recipes():
 
     print("Total perfect match recipes: " + str(len(perfect_match_recipes)))
     
-    # Calculate pagination
     start_idx = (page - 1) * per_page
     end_idx = start_idx + per_page
     
-    # Get the recipes for this page
     paginated_recipes = perfect_match_recipes[start_idx:end_idx]
     
-    # Check if there are more recipes available
     has_more = end_idx < len(perfect_match_recipes)
     
     ids = ','.join([str(recipe["id"]) for recipe in paginated_recipes])
@@ -100,4 +103,4 @@ with app.app_context():
     db.create_all()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

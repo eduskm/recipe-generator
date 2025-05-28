@@ -155,116 +155,114 @@ const useRecipes = () => {
 };
 
 // Custom hook for favorites management
-const useFavorites = (userId, token) => {
+const useFavorites = (user) => {
     const [favorites, setFavorites] = useState([]);
-  
-    // Load favorites from backend on mount or when userId/token changes
+
+    // Load favorites from backend on mount or when the user changes
     useEffect(() => {
-      if (!userId || !token) {
-        // No user logged in, fallback to localStorage
-        try {
-          const saved = localStorage.getItem('favoriteRecipes');
-          setFavorites(saved ? JSON.parse(saved) : []);
-        } catch {
-          setFavorites([]);
+        // If there's no user, fall back to localStorage
+        if (!user) {
+            try {
+                const saved = localStorage.getItem('favoriteRecipes');
+                setFavorites(saved ? JSON.parse(saved) : []);
+            } catch {
+                setFavorites([]);
+            }
+            return;
         }
-        return;
-      }
-  
-      // Fetch favorites from backend
-      fetch(`/api/favorite-recipes?user_id=${userId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then(res => {
-          if (!res.ok) throw new Error("Failed to fetch favorites");
-          return res.json();
-        })
-        .then(data => {
-          if (data.recipes && data.recipes.length > 0) {
-            setFavorites(data.recipes);
-            localStorage.setItem('favoriteRecipes', JSON.stringify(data.recipes)); // keep localStorage in sync
-          } else {
-            // fallback to localStorage if backend is empty
-            const saved = localStorage.getItem('favoriteRecipes');
-            setFavorites(saved ? JSON.parse(saved) : []);
-          }
-        })
-        .catch(() => {
-          // On error fallback to localStorage
-          try {
-            const saved = localStorage.getItem('favoriteRecipes');
-            setFavorites(saved ? JSON.parse(saved) : []);
-          } catch {
-            setFavorites([]);
-          }
-        });
-    }, [userId, token]);
-  
-    // Save to backend and localStorage when adding favorite
+
+        // If there is a user, fetch their favorites from the backend
+        fetch(`${API_BASE_URL}/favorite-recipes?user_id=${user.id}`) // Correct URL
+            .then(res => {
+                if (!res.ok) throw new Error("Failed to fetch favorites");
+                return res.json();
+            })
+            .then(data => {
+                if (data.recipes) {
+                    setFavorites(data.recipes);
+                    // Also update localStorage to keep it in sync
+                    localStorage.setItem('favoriteRecipes', JSON.stringify(data.recipes));
+                }
+            })
+            .catch((error) => {
+                console.error("Error fetching favorites:", error);
+                // On error, you can still fall back to localStorage
+                const saved = localStorage.getItem('favoriteRecipes');
+                setFavorites(saved ? JSON.parse(saved) : []);
+            });
+    }, [user]); // This effect runs whenever the user object changes
+
+    // Save to backend and localStorage when adding a favorite
     const addToFavorites = useCallback((recipe) => {
-      setFavorites(prev => {
-        if (prev.some(fav => fav.id === recipe.id)) return prev;
-  
-        const updated = [...prev, { ...recipe, dateAdded: new Date().toISOString() }];
-  
-        // Update backend
-        if (userId && token) {
-          fetch('/api/favorite-recipes', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`
-            },
-            body: JSON.stringify({ user_id: userId, ...recipe })
-          }).catch(console.error);
+        if (!user) {
+            console.log("Cannot add favorite. No user is logged in.");
+            return;
         }
-  
-        localStorage.setItem('favoriteRecipes', JSON.stringify(updated));
-        return updated;
-      });
-    }, [userId, token]);
-  
+
+        setFavorites(prev => {
+            if (prev.some(fav => fav.id === recipe.id)) return prev;
+            
+            const updated = [...prev, { ...recipe, dateAdded: new Date().toISOString() }];
+
+            // Update backend
+            fetch(`${API_BASE_URL}/favorite-recipes`, { // Correct URL
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: user.id, 
+                    recipe: recipe
+                })
+            }).catch(console.error);
+
+            localStorage.setItem('favoriteRecipes', JSON.stringify(updated));
+            return updated;
+        });
+    }, [user]);
+
     // Remove from backend and localStorage
     const removeFromFavorites = useCallback((recipeId) => {
-      setFavorites(prev => {
-        const updated = prev.filter(fav => fav.id !== recipeId);
-  
-        if (userId && token) {
-          fetch(`/api/favorite-recipes/${recipeId}`, {
-            method: 'DELETE',
-            headers: { Authorization: `Bearer ${token}` }
-          }).catch(console.error);
-        }
-  
-        localStorage.setItem('favoriteRecipes', JSON.stringify(updated));
-        return updated;
-      });
-    }, [userId, token]);
-  
+        if (!user) return;
+
+        setFavorites(prev => {
+            const updated = prev.filter(fav => fav.id !== recipeId);
+
+            // Update backend
+            fetch(`${API_BASE_URL}/favorite-recipes/${recipeId}?user_id=${user.id}`, { // Correct URL
+                method: 'DELETE',
+            }).catch(console.error);
+
+            localStorage.setItem('favoriteRecipes', JSON.stringify(updated));
+            return updated;
+        });
+    }, [user]);
+
     const isFavorite = useCallback((recipeId) => {
-      return favorites.some(fav => fav.id === recipeId);
+        return favorites.some(fav => fav.id === recipeId);
     }, [favorites]);
-  
+
     const clearAllFavorites = useCallback(() => {
-      setFavorites([]);
-      localStorage.removeItem('favoriteRecipes');
-  
-      if (userId && token) {
-        fetch(`/api/favorite-recipes/clear`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` }
+        if (!user) return;
+
+        setFavorites([]);
+        localStorage.removeItem('favoriteRecipes');
+
+        // Update backend
+        fetch(`${API_BASE_URL}/favorite-recipes/clear`, { // Correct URL
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: user.id })
         }).catch(console.error);
-      }
-    }, [userId, token]);
-  
+
+    }, [user]);
+
     return {
-      favorites,
-      addToFavorites,
-      removeFromFavorites,
-      isFavorite,
-      clearAllFavorites
+        favorites,
+        addToFavorites,
+        removeFromFavorites,
+        isFavorite,
+        clearAllFavorites
     };
-  };
+};
 
 function RecipeFinder() {
     // State management
@@ -286,9 +284,19 @@ function RecipeFinder() {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [lastSelectedIngredient, setLastSelectedIngredient] = useState(null);
     const [userTab, setUserTab] = useState(false);
-    const [user, setUser] = useState(null);
     const [showRegister, setShowRegister] = useState(false);
     const [currentView, setCurrentView] = useState('recipes'); // 'recipes' or 'favorites'
+    const [user, setUser] = useState(null);
+    console.log('user is' + user);
+    useEffect(() => {
+        const userName = localStorage.getItem("user");
+        if(userName) {
+            const userObject = JSON.parse(userName);
+
+            setUser(userObject);
+        }
+
+    }, []);
 
     // Custom hooks
     const { showPopup, triggerPopup } = usePopup();
@@ -301,7 +309,7 @@ function RecipeFinder() {
         fetchRecipes,
         loadMoreRecipes
     } = useRecipes();
-    const { favorites, addToFavorites, removeFromFavorites, isFavorite, clearAllFavorites } = useFavorites();
+    const { favorites, addToFavorites, removeFromFavorites, isFavorite, clearAllFavorites } = useFavorites(user);
 
     // Memoized values
     const hasSelectedIngredients = useMemo(() =>
@@ -530,7 +538,6 @@ function RecipeFinder() {
                 </p>
             );
         }
-
         return (
             <>
                 {recipes.map((recipe, index) => renderRecipeCard(recipe, index))}

@@ -115,3 +115,50 @@ def change_password():
     user.set_password(new_password)
     db.session.commit()
     return jsonify({"message": "Password changed successfully"}), 200
+
+@auth_bp.route("/check_session", methods=['POST'])
+def check_session():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+        
+    return jsonify({
+        "id": user.id,
+        "username": user.username
+    })
+
+@auth_bp.route('/delete_account', methods=['POST'])
+def delete_account():
+    """
+    Deletes a user account.
+    Requires email and current password for verification.
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "Invalid JSON payload"}), 400
+
+        email = data.get('email')
+        password = data.get('password')
+
+        if not email or not password:
+            return jsonify({"error": "Missing email or password"}), 400
+
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        if not user.check_password(password): # Verify password
+            return jsonify({"error": "Invalid credentials, unable to delete account"}), 401
+
+        db.session.delete(user)
+        db.session.commit()
+        
+        return jsonify({"message": "Account deleted successfully"}), 200
+    except Exception as e:
+        print(f"Error during account deletion: {str(e)}") # For debugging
+        return jsonify({"error": f"Error processing account deletion: {str(e)}"}), 500
