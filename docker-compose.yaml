@@ -16,12 +16,8 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - ./backend:/app  # This line saves your app.db file
-    env_file: # You can still use this for your API key
+      - ./backend:/app
+    env_file:
       - ./backend/.env
-    # The 'depends_on: - db' is now REMOVED
 
-# The entire 'db' service has been REMOVED from here
-
-# The 'volumes: db_data' has also been REMOVED
-volumes: {} # You can leave this empty or remove the volumes key entirely if no other service uses a named volume
+volumes: {}
