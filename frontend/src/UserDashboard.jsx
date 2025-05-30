@@ -13,10 +13,10 @@ const UserDashboard = ({ user, onLogout }) => {
   };
 
   const handleDeleteAccount = () => {
-    setShowConfirm('delete'); // This will trigger the Alert modal
+    setShowConfirm('delete'); 
   };
 
-  // This function is now async and accepts the password from the Alert component
+  // component that shows alert
   const confirmDelete = async (password) => {
     try {
       const response = await fetch('http://localhost:5000/delete_account', { // Make sure the proxy is set up in package.json or use the full URL
@@ -26,24 +26,23 @@ const UserDashboard = ({ user, onLogout }) => {
         },
         body: JSON.stringify({
           email: user.email,
-          password: password, // Send the email and password
+          password: password,
         }),
       });
 
       if (response.ok) {
-        // If deletion is successful on the backend...
         localStorage.removeItem('user'); // ...log the user out on the frontend
         onLogout();
         setShowConfirm(null);
-        return true; // Indicate success
+        return true;
       } else {
         // If credentials fail or another error occurs
         console.error('Failed to delete account');
-        return false; // Indicate failure
+        return false;
       }
     } catch (error) {
       console.error('Error during account deletion:', error);
-      return false; // Indicate failure
+      return false;
     }
   };
 
@@ -88,7 +87,6 @@ const UserDashboard = ({ user, onLogout }) => {
         change password
       </button>
 
-      {/* Pass the correct props to the Alert component */}
       <Alert
         action={showConfirm}
         confirmDelete={confirmDelete}

@@ -4,7 +4,6 @@ import { GoogleLogin } from '@react-oauth/google';
 const Login = () => {
   const handleLoginSuccess = (response) => {
     const token = response.credential;
-    // Trimite token-ul la backend pentru a-l verifica
     fetch('http://localhost:5000/auth', {
       method: 'POST',
       mode: 'cors',
@@ -18,7 +17,7 @@ const Login = () => {
         console.log('Logged in successfully:', data);
          if (data.user) {
           localStorage.setItem('user', JSON.stringify(data.user));
-          window.location.reload(); // 👈 actualizează aplicația
+          window.location.reload();
         }
       })
       .catch((error) => console.log('Error logging in:', error));

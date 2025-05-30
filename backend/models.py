@@ -1,10 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy.types import JSON # Import the JSON type
+from sqlalchemy.types import JSON 
 
 db = SQLAlchemy()
 
-# ... (User model remains the same) ...
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     google_id = db.Column(db.String(128), unique=True, nullable=True)
@@ -31,8 +30,8 @@ class FavoriteRecipe(db.Model):
     ready_in_minutes = db.Column(db.Integer)
     servings = db.Column(db.Integer)
     summary = db.Column(db.Text)
-    extended_ingredients = db.Column(JSON) # Store as JSON
-    analyzed_instructions = db.Column(JSON) # Store as JSON
+    extended_ingredients = db.Column(JSON) 
+    analyzed_instructions = db.Column(JSON) 
 
     def to_dict(self):
         return {
