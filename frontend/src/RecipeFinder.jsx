@@ -597,10 +597,10 @@ function RecipeFinder() {
                     <div className="overflow-y-auto rounded-2xl">
                         {/* Left Sidebar */}
                         <aside
-                            className="flex relative bg-center"
+                            className="flex relative bg-center bg-fixed"
                             style={{
                                 backgroundImage: `url(${veggiesImage})`,
-                                width: 'clamp(200px, 25vw, 320px)', minWidth: '200px'
+                                width: 'clamp(150px, 25vw, 320px)', minWidth: '200px'
                             }}
                         >
                             <div className="absolute inset-0 bg-black opacity-10" />

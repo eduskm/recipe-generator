@@ -4,7 +4,6 @@ import { GoogleLogin } from '@react-oauth/google';
 const Login = () => {
   const handleLoginSuccess = (response) => {
     const token = response.credential;
-    // Trimite token-ul la backend pentru a-l verifica
     fetch('http://localhost:5000/auth', {
       method: 'POST',
       mode: 'cors',
